@@ -48,7 +48,7 @@ interface Cache
      *
      * @return array|mixed[]
      */
-    public function fetchMultiple(array $keys = array());
+    public function fetchMultiple(array $keys = []);
 
     /**
      * @param array|string[] $tags
@@ -56,7 +56,7 @@ interface Cache
      *
      * @return array|mixed[]
      */
-    public function fetchByTags(array $tags = array(), $intersect = true);
+    public function fetchByTags(array $tags = [], $intersect = true);
 
     /**
      * @param string         $key
@@ -66,7 +66,7 @@ interface Cache
      *
      * @return bool
      */
-    public function add($key, $value, $ttl = null, array $tags = array());
+    public function add($key, $value, $ttl = null, array $tags = []);
 
     /**
      * @param mixed[]        $values
@@ -75,7 +75,7 @@ interface Cache
      *
      * @return bool
      */
-    public function addMultiple($values, $ttl = null, array $tags = array());
+    public function addMultiple($values, $ttl = null, array $tags = []);
 
     /**
      * @param string         $key
@@ -85,7 +85,7 @@ interface Cache
      *
      * @return bool
      */
-    public function save($key, $value, $ttl = null, array $tags = array());
+    public function save($key, $value, $ttl = null, array $tags = []);
 
     /**
      * @param array|mixed[]  $values
@@ -94,7 +94,7 @@ interface Cache
      *
      * @return bool
      */
-    public function saveMultiple($values, $ttl = null, array $tags = array());
+    public function saveMultiple($values, $ttl = null, array $tags = []);
 
     /**
      * @param string         $key
@@ -104,7 +104,7 @@ interface Cache
      *
      * @return bool
      */
-    public function replace($key, $value, $ttl = null, array $tags = array());
+    public function replace($key, $value, $ttl = null, array $tags = []);
 
     /**
      * @param array|mixed[]  $values
@@ -113,7 +113,7 @@ interface Cache
      *
      * @return bool
      */
-    public function replaceMultiple($values, $ttl = null, array $tags = array());
+    public function replaceMultiple($values, $ttl = null, array $tags = []);
 
     /**
      * @param string $key
@@ -135,7 +135,7 @@ interface Cache
      *
      * @return bool
      */
-    public function deleteByTags(array $tags = array(), $intersect = true);
+    public function deleteByTags(array $tags = [], $intersect = true);
 
     /**
      * @param array|string[] $keys
@@ -143,7 +143,7 @@ interface Cache
      *
      * @return bool
      */
-    public function tag($keys, array $tags = array());
+    public function tag($keys, array $tags = []);
 
     /**
      * @param array|string[] $keys

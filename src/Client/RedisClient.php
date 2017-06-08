@@ -14,10 +14,10 @@ use MS\Cache\Namespaces;
 
 class RedisClient implements Cache
 {
-    /** @var  \Redis */
+    /** @var \Redis */
     protected $client;
 
-    /** @var Namespaces  */
+    /** @var Namespaces */
     protected $namespaces;
 
     /** @var array|string[] */
@@ -111,7 +111,7 @@ class RedisClient implements Cache
      *
      * @return array|mixed[]
      */
-    public function fetchMultiple(array $keys = array())
+    public function fetchMultiple(array $keys = [])
     {
         if (empty($keys)) {
             return [];
@@ -119,7 +119,7 @@ class RedisClient implements Cache
 
         $nsKeys = $this->namespaces->apply($keys);
         $serializedValues = $this->client->mget($nsKeys);
-        $values = array_map(array($this, 'deserialize'), $serializedValues);
+        $values = array_map([$this, 'deserialize'], $serializedValues);
         $values = array_combine($keys, $values);
 
         return $values;
@@ -131,12 +131,12 @@ class RedisClient implements Cache
      *
      * @return array|mixed[]
      */
-    public function fetchByTags(array $tags = array(), $intersect = true)
+    public function fetchByTags(array $tags = [], $intersect = true)
     {
         $tags = $this->namespaces->flatten($tags);
         $nsTags = $this->namespaces->apply($tags, 'tag');
-        $keys = call_user_func_array(array($this->client, $intersect ? 'sInter' : 'sUnion'), $nsTags);
-        $values = empty($keys) ? array() : $this->fetchMultiple($keys);
+        $keys = call_user_func_array([$this->client, $intersect ? 'sInter' : 'sUnion'], $nsTags);
+        $values = empty($keys) ? [] : $this->fetchMultiple($keys);
 
         return (array) $values;
     }
@@ -149,12 +149,12 @@ class RedisClient implements Cache
      *
      * @return bool
      */
-    public function add($key, $value, $ttl = null, array $tags = array())
+    public function add($key, $value, $ttl = null, array $tags = [])
     {
         $nsKey = $this->namespaces->apply($key);
         $serializedValue = $this->serialize($value);
 
-        $options = array('nx', 'px' => $ttl ? intval($ttl * 1000) : null);
+        $options = ['nx', 'px' => $ttl ? (int) ($ttl * 1000) : null];
         $options = array_filter($options);
         $out = $this->client->set($nsKey, $serializedValue, $options);
         $this->tag($key, $tags);
@@ -169,12 +169,12 @@ class RedisClient implements Cache
      *
      * @return bool
      */
-    public function addMultiple($values, $ttl = null, array $tags = array())
+    public function addMultiple($values, $ttl = null, array $tags = [])
     {
         $keys = array_keys($values);
         $nsKeys = $this->namespaces->apply($keys);
 
-        $serializedValues = array_map(array($this, 'serialize'), $values);
+        $serializedValues = array_map([$this, 'serialize'], $values);
         $nsValues = array_combine($nsKeys, $serializedValues);
 
         $out = $this->client->msetnx($nsValues);
@@ -191,12 +191,12 @@ class RedisClient implements Cache
      *
      * @return bool
      */
-    public function save($key, $value, $ttl = null, array $tags = array())
+    public function save($key, $value, $ttl = null, array $tags = [])
     {
         $nsKey = $this->namespaces->apply($key);
         $serializedValue = $this->serialize($value);
 
-        $options = array('px' => $ttl ? intval($ttl * 1000) : null);
+        $options = ['px' => $ttl ? (int) ($ttl * 1000) : null];
         $options = array_filter($options);
 
         $out = $this->client->set($nsKey, $serializedValue, $options);
@@ -212,12 +212,12 @@ class RedisClient implements Cache
      *
      * @return bool
      */
-    public function saveMultiple($values, $ttl = null, array $tags = array())
+    public function saveMultiple($values, $ttl = null, array $tags = [])
     {
         $keys = array_keys($values);
         $nsKeys = $this->namespaces->apply($keys);
 
-        $serializedValues = array_map(array($this, 'serialize'), $values);
+        $serializedValues = array_map([$this, 'serialize'], $values);
         $nsValues = array_combine($nsKeys, $serializedValues);
 
         $out = $this->client->mset($nsValues);
@@ -234,12 +234,12 @@ class RedisClient implements Cache
      *
      * @return bool
      */
-    public function replace($key, $value, $ttl = null, array $tags = array())
+    public function replace($key, $value, $ttl = null, array $tags = [])
     {
         $nsKey = $this->namespaces->apply($key);
         $serializedValue = $this->serialize($value);
 
-        $options = array('xx', 'px' => $ttl ? intval($ttl * 1000) : null);
+        $options = ['xx', 'px' => $ttl ? (int) ($ttl * 1000) : null];
         $options = array_filter($options);
         $out = $this->client->set($nsKey, $serializedValue, $options);
         $this->tag($key, $tags);
@@ -254,12 +254,12 @@ class RedisClient implements Cache
      *
      * @return bool
      */
-    public function replaceMultiple($values, $ttl = null, array $tags = array())
+    public function replaceMultiple($values, $ttl = null, array $tags = [])
     {
         $keys = array_keys($values);
         $nsKeys = $this->namespaces->apply($keys);
 
-        $serializedValues = array_map(array($this, 'serialize'), $values);
+        $serializedValues = array_map([$this, 'serialize'], $values);
         $nsValues = array_combine($nsKeys, $serializedValues);
 
         if (!$this->containsMultiple($keys)) {
@@ -306,11 +306,11 @@ class RedisClient implements Cache
      *
      * @return bool
      */
-    public function deleteByTags(array $tags = array(), $intersect = true)
+    public function deleteByTags(array $tags = [], $intersect = true)
     {
         $tags = $this->namespaces->flatten($tags);
         $nsTags = $this->namespaces->apply($tags, 'tag');
-        $keys = call_user_func_array(array($this->client, $intersect ? 'sInter' : 'sUnion'), $nsTags);
+        $keys = call_user_func_array([$this->client, $intersect ? 'sInter' : 'sUnion'], $nsTags);
 
         return empty($keys) ? true : $this->deleteMultiple($keys);
     }
@@ -321,14 +321,14 @@ class RedisClient implements Cache
      *
      * @return bool
      */
-    public function tag($keys, array $tags = array())
+    public function tag($keys, array $tags = [])
     {
         if (empty($tags)) {
             return true;
         }
 
         if (!is_array($keys)) {
-            $keys = array($keys);
+            $keys = [$keys];
         }
 
         $tags = $this->namespaces->flatten($tags);
@@ -339,7 +339,7 @@ class RedisClient implements Cache
 
         $nsTags = $this->namespaces->apply($tags, 'tag');
         foreach ($nsTags as $nsTag) {
-            call_user_func_array(array($this->client, 'sAdd'), array_merge(array($nsTag), $keys));
+            call_user_func_array([$this->client, 'sAdd'], array_merge([$nsTag], $keys));
         }
     }
 
@@ -351,7 +351,7 @@ class RedisClient implements Cache
     public function untag($keys)
     {
         if (!is_array($keys)) {
-            $keys = array($keys);
+            $keys = [$keys];
         }
 
         $nsTagsKeys = $this->namespaces->apply($keys, 'tags');
@@ -360,7 +360,7 @@ class RedisClient implements Cache
             return false;
         }
 
-        $tagsList = array_map(array($this, 'deserialize'), $serializedTagsList);
+        $tagsList = array_map([$this, 'deserialize'], $serializedTagsList);
         $tagsList = array_filter($tagsList);
         if (count($tagsList) < 2) {
             return false;
@@ -372,7 +372,7 @@ class RedisClient implements Cache
         $nsTags = $this->namespaces->apply($tags, 'tag');
         foreach ($nsTags as $nsTag) {
             $this->client->sRem($nsTag, $keys);
-            call_user_func_array(array($this->client, 'sRem'), array_merge(array($nsTag), $keys));
+            call_user_func_array([$this->client, 'sRem'], array_merge([$nsTag], $keys));
         }
 
         return $this->client->del($nsTagsKeys);
@@ -392,7 +392,9 @@ class RedisClient implements Cache
             $secret = $this->locks[$nsName];
         }
 
-        return $this->client->get($nsName) === $secret;
+        $locked = ($this->client->get($nsName) === $secret);
+
+        return $locked;
     }
 
     /**
@@ -415,7 +417,7 @@ class RedisClient implements Cache
 
         $nsName = $this->namespaces->apply($name, 'lock');
 
-        $options = array('nx', 'px' => $ttl ? intval($ttl * 1000) : null);
+        $options = ['nx', 'px' => $ttl ? (int) ($ttl * 1000) : null];
         $options = array_filter($options);
 
         while (!($result = $this->client->set($nsName, $secret, $options)) and $blocking) {
@@ -459,13 +461,12 @@ class RedisClient implements Cache
      *
      * @return string
      */
-    public function serialize($value, $format = null, array $context = array())
+    public function serialize($value, $format = null, array $context = [])
     {
         switch ($format) {
             default:
             case 'json':
                 return json_encode($value);
-
             case 'serialize':
                 return serialize($value);
         }
@@ -479,13 +480,12 @@ class RedisClient implements Cache
      *
      * @return mixed
      */
-    public function deserialize($value, $type = null, $format = null, array $context = array())
+    public function deserialize($value, $type = null, $format = null, array $context = [])
     {
         switch ($format) {
             default:
             case 'json':
                 return json_decode($value, true);
-
             case 'serialize':
                 return unserialize($value);
         }
