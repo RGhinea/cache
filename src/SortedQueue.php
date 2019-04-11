@@ -33,10 +33,12 @@ class SortedQueue extends Queue
         $nsName = $this->ns->apply($this->name);
         $values = $this->redis->zRevRange($nsName, 0, $count);
 
+        $args = [$nsName];
         foreach ($values as $value) {
-            $this->redis->zAdd($nsName, 0, $value);
+            $args[] = $value;
         }
-        $this->redis->zRemRangeByScore($nsName, 0, 0);
+        call_user_func_array([$this->redis, 'zRem'], $args);
+        $values = array_map([$this, 'deserialize'], $values);
 
         return $values;
     }
