@@ -2,7 +2,7 @@
 
 namespace MS\Cache;
 
-class SortedQueue extends Queue
+class ScoreboardQueue extends Queue
 {
     public function enqueue($values)
     {
@@ -33,11 +33,7 @@ class SortedQueue extends Queue
         $nsName = $this->ns->apply($this->name);
         $values = $this->redis->zRevRange($nsName, 0, $count);
 
-        $args = [$nsName];
-        foreach ($values as $value) {
-            $args[] = $value;
-        }
-        call_user_func_array([$this->redis, 'zRem'], $args);
+        call_user_func_array([$this->redis, 'zRem'], array_merge([$nsName], $values));
         $values = array_map([$this, 'deserialize'], $values);
 
         return $values;

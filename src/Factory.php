@@ -68,8 +68,8 @@ class Factory
             return $this->queues[$name];
         }
 
-        if ($type === 'sorted') {
-            return $this->queues[$name] = new SortedQueue($name, $this->redis, $this->ns, $this->options);
+        if ($type === 'scoreboard') {
+            return $this->queues[$name] = new ScoreboardQueue($name, $this->redis, $this->ns, $this->options);
         }
 
         if ($multi === 0) {
